@@ -1,6 +1,6 @@
-# fresh website
+# Fresh website
 
-This is the fresh website source. The fresh website contains:
+This is the Fresh website source. The Fresh website contains:
 
 - a homepage
 - a documentation page
@@ -10,11 +10,7 @@ This is the fresh website source. The fresh website contains:
 Start the project:
 
 ```
-deno run -A --watch main.ts
+deno task start
 ```
 
-After adding, removing, or moving a page in the `pages` directory, run:
-
-```
-fresh manifest
-```
+This will watch the project directory and restart as necessary.
