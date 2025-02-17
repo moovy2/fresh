@@ -9,37 +9,44 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     strategy:
+      fail-fast: false
       matrix:
-        deno: ["v1.x", "canary"]
+        deno: ["v2.x", "canary"]
         os: [macOS-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            cache_path: ~/.cache/deno/
+          - os: macos-latest
+            cache_path: ~/Library/Caches/deno/
+          - os: windows-latest
+            cache_path: ~\AppData\Local\deno\
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
 
       - name: Verify formatting
-        if: startsWith(matrix.os, 'ubuntu') && matrix.deno == 'canary'
+        if: startsWith(matrix.os, 'ubuntu') && matrix.deno == 'v2.x'
         run: deno fmt --check
 
       - name: Run linter
-        if: startsWith(matrix.os, 'ubuntu') && matrix.deno == 'canary'
+        if: startsWith(matrix.os, 'ubuntu') && matrix.deno == 'v2.x'
         run: deno lint
 
-      - name: Cache dependencies
-        run: deno cache --no-check src/cli/deps.ts src/runtime/deps.ts src/server/deps.ts
+      - name: Spell-check
+        if: startsWith(matrix.os, 'ubuntu') && matrix.deno == 'v2.x'
+        uses: crate-ci/typos@master
+
+      - name: Type check project
+        run: deno task check:types
 
       - name: Run tests
-        run: deno test -A --no-check=remote
-
-      - name: Type check website
-        run: deno cache --no-check=remote www/main.ts
-
-      - name: Type check examples/counter
-        run: deno cache --no-check=remote examples/counter/main.ts
+        run: deno task test

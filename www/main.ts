@@ -1,10 +1,15 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="dom" />
-/// <reference lib="dom.asynciterable" />
-/// <reference lib="deno.ns" />
-/// <reference lib="deno.unstable" />
+import "./telemetry.ts";
+import { App, fsRoutes, staticFiles, trailingSlashes } from "fresh";
 
-import { start } from "./server_deps.ts";
-import routes from "./fresh.gen.ts";
+export const app = new App({ root: import.meta.url })
+  .use(staticFiles())
+  .use(trailingSlashes("never"));
 
-await start(routes);
+await fsRoutes(app, {
+  loadIsland: (path) => import(`./islands/${path}`),
+  loadRoute: (path) => import(`./routes/${path}`),
+});
+
+if (import.meta.main) {
+  await app.listen();
+}

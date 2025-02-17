@@ -1,60 +1,45 @@
-/** @jsx h */
-
-import { apply, h, tw } from "../client_deps.ts";
-import {
-  CATEGORIES,
+import type {
   TableOfContentsCategory,
   TableOfContentsCategoryEntry,
 } from "../data/docs.ts";
 
-export default function DocsSidebar(props: { path: string }) {
-  return (
-    <ol class={tw`list-decimal list-inside font-semibold` + " nested"}>
-      {CATEGORIES.map((category) => (
-        <SidebarCategory path={props.path} category={category} />
-      ))}
-    </ol>
-  );
-}
-
-const link = apply`text(gray-900 hover:gray-600)`;
-const linkActive = apply`text(green-600 hover:green-500)`;
-
 export function SidebarCategory(props: {
-  path: string;
   category: TableOfContentsCategory;
 }) {
-  const outerItem = tw`my-2 block`;
-  const innerList = tw`pl-4 list-decimal` + " nested";
-
   const { title, href, entries } = props.category;
-  const outerLink = tw`${href == props.path ? linkActive : link} font-bold`;
 
   return (
-    <li class={outerItem}>
-      <a href={href} class={outerLink}>{title}</a>
+    <li class="my-2 block">
+      <a
+        href={href}
+        class="text-foreground-secondary hover:text-gray-600 aria-[current]:text-fresh-green aria-[current]:hover:underline font-bold"
+      >
+        {title}
+      </a>
       {entries.length > 0 && (
-        <ol class={innerList}>
+        <ul class="py-2 nested list-outside">
           {entries.map((entry) => (
-            <SidebarEntry path={props.path} entry={entry} />
+            <SidebarEntry key={entry.href} entry={entry} />
           ))}
-        </ol>
+        </ul>
       )}
     </li>
   );
 }
 
 export function SidebarEntry(props: {
-  path: string;
   entry: TableOfContentsCategoryEntry;
 }) {
-  const innerItem = tw`my-0.5`;
-
   const { title, href } = props.entry;
-  const innerLink = tw`${href == props.path ? linkActive : link} font-normal`;
+
   return (
-    <li class={innerItem}>
-      <a href={href} class={innerLink}>{title}</a>
+    <li class="py-[1px]">
+      <a
+        href={href}
+        class="aria-[current]:text-fresh-green aria-[current]:border-green-600 aria-[current]:bg-fresh-green/5 border-l-4 border-transparent px-4 py-0.5 transition-colors hover:text-fresh-green/80 font-normal block"
+      >
+        {title}
+      </a>
     </li>
   );
 }

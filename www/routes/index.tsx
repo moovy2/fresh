@@ -1,239 +1,86 @@
-/** @jsx h */
-/** @jsxFrag Fragment */
-
-import {
-  asset,
-  ComponentChildren,
-  Fragment,
-  h,
-  Head,
-  PageProps,
-  tw,
-} from "../client_deps.ts";
-import Counter from "../islands/Counter.tsx";
-import LemonDrop from "../islands/LemonDrop.tsx";
+import { asset } from "fresh/runtime";
+import { page } from "fresh";
+import VERSIONS from "../../versions.json" with { type: "json" };
 import Footer from "../components/Footer.tsx";
-import WarningBanner from "../components/WarningBanner.tsx";
-import { Leaf } from "../components/Icons.tsx";
+import Header from "../components/Header.tsx";
+import { CTA } from "../components/homepage/CTA.tsx";
+import { Hero } from "../components/homepage/Hero.tsx";
+import { IslandsSection } from "../components/homepage/IslandsSection.tsx";
+import { PartialsSection } from "../components/homepage/PartialsSection.tsx";
+import { RenderingSection } from "../components/homepage/RenderingSection.tsx";
+import { FormsSection } from "../components/homepage/FormsSection.tsx";
+import { Simple } from "../components/homepage/Simple.tsx";
+import { SocialProof } from "../components/homepage/SocialProof.tsx";
+import { DenoSection } from "../components/homepage/DenoSection.tsx";
+import { define } from "../utils/state.ts";
 
-const TITLE = "fresh - The next-gen web framework.";
-const DESCRIPTION =
-  "Just in time edge rendering, island based interactivity, and no configuration TypeScript support using Deno.";
+export const handler = define.handlers({
+  GET(ctx) {
+    const { req } = ctx;
+    const accept = req.headers.get("accept");
+    const userAgent = req.headers.get("user-agent");
+    if (userAgent?.includes("Deno/") && !accept?.includes("text/html")) {
+      const path = `https://deno.land/x/fresh@${VERSIONS[0]}/init.ts`;
+      return new Response(`Redirecting to ${path}`, {
+        headers: { "Location": path },
+        status: 307,
+      });
+    }
 
-export default function MainPage(props: PageProps) {
-  const ogImageUrl = new URL(asset("/home-og.png"), props.url).href;
+    ctx.state.title =
+      "Fresh - The simple, approachable, productive web framework.";
+    ctx.state.description =
+      "Fresh features just-in-time edge rendering, island based interactivity, and zero-configuration TypeScript support. Fast to write; fast to run.";
+    ctx.state.ogImage = new URL(asset("/og-image.webp"), ctx.url).href;
 
-  return (
-    <>
-      <Head>
-        <title>{TITLE}</title>
-        <meta name="description" content={DESCRIPTION} />
-        <meta property="og:title" content={TITLE} />
-        <meta property="og:description" content={DESCRIPTION} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={props.url.href} />
-        <meta property="og:image" content={ogImageUrl} />
-      </Head>
-      <Hero />
-      <Intro />
-      <GettingStarted />
-      <Example />
-      <Footer />
-    </>
-  );
-}
-
-function Hero() {
-  const container = tw
-    `w-full flex justify-center items-center flex-col bg-green-300`;
-  const nav = tw`flex justify-end items-center bg-green-300`;
-  const a = tw
-    `border(1 black) inline-flex items-center h-10 px-4 m-4 text-black bg-transparent rounded hover:bg-white`;
-
-  return (
-    <Fragment>
-      <div class={nav}>
-        <a href="/docs" class={a}>
-          Documentation
-        </a>
-      </div>
-      <section class={container}>
-        <LemonDrop />
-      </section>
-    </Fragment>
-  );
-}
-export interface ListItemProps {
-  children: ComponentChildren;
-}
-
-function ListItem(props: ListItemProps) {
-  return (
-    <div class={tw`flex mt-3`}>
-      <Leaf />
-      <div class={tw`pl-4 flex-1`}>
-        {props.children}
-      </div>
-    </div>
-  );
-}
-
-function Intro() {
-  const title = tw
-    `py-4 text(4xl sm:4xl lg:4xl gray-900 center) sm:tracking-tight font-extrabold`;
-
-  return (
-    <section
-      class={tw`max-w-screen-sm mx-auto my-16 px(4 sm:6 md:8) space-y-4`}
-    >
-      <picture>
-        <source
-          srcset={`${asset("/illustration/2x.avif")} 2x, ${
-            asset("/illustration/1x.avif")
-          }`}
-          type="image/avif"
-        />
-        <source
-          srcset={`${asset("/illustration/2x.webp")} 2x, ${
-            asset("/illustration/1x.webp")
-          }`}
-          type="image/webp"
-        />
-        <img
-          src={asset("/illustration/1x.jpeg")}
-          srcset={`${asset("/illustration/2x.jpeg")} 2x`}
-          class={tw`w-64 mx-auto`}
-          width={800}
-          height={678}
-          alt="deno is drinking fresh lemon squash"
-        />
-      </picture>
-
-      <h2 class={title}>
-        The next-gen web framework.
-      </h2>
-
-      <p class={tw`text-gray-600`}>
-        Fresh is a next generation web framework, built for speed, reliability,
-        and simplicity. Some stand out features:
-      </p>
-
-      <div>
-        <ListItem>
-          <b>Just-in-time rendering</b> on the edge.
-        </ListItem>
-        <ListItem>
-          <b>Island based client hydration</b> for maximum interactivity.
-        </ListItem>
-        <ListItem>
-          <b>Zero runtime overhead</b>: no JS is shipped to the client by
-          default.
-        </ListItem>
-        <ListItem>
-          <b>No build step</b>.
-        </ListItem>
-        <ListItem>
-          <b>No configuration</b> necessary.
-        </ListItem>
-        <ListItem>
-          <b>TypeScript support</b> out of the box.
-        </ListItem>
-      </div>
-
-      <p class={tw`text-gray-600`}>
-        Fresh embraces the tried and true design of server side rendering and
-        progressive enhancement on the client side.
-      </p>
-    </section>
-  );
-}
-
-function GettingStarted() {
-  return (
-    <section
-      class={tw`max-w-screen-sm mx-auto my-16 px(4 sm:6 md:8) space-y-4`}
-    >
-      <h2 id="getting-started" class={tw`text(xl gray-600) font-bold`}>
-        <a href="#getting-started" class={tw`hover:underline`}>
-          Getting started
-        </a>
-      </h2>
-      <WarningBanner />
-      <p class={tw`text-gray-600`}>
-        To get started, make sure you have the{" "}
-        <a href="https://deno.land" class={tw`text-blue-600 hover:underline`}>
-          Deno CLI
-        </a>{" "}
-        installed.
-      </p>
-      <p class={tw`text-gray-600`}>
-        Then, run the following command to install the `fresh` CLI:
-      </p>
-      <pre class={tw`overflow-x-auto py-2 px-4 bg(gray-100)`}>
-        deno install -A -f --no-check -n fresh -r
-        https://raw.githubusercontent.com/lucacasonato/fresh/main/cli.ts
-      </pre>
-      <p class={tw`text-gray-600`}>
-        Once installed, you can use the `fresh` command to bootstrap a new
-        project:
-      </p>
-      <pre class={tw`overflow-x-auto py-2 px-4 bg(gray-100)`}>
-        fresh init my-app
-      </pre>
-      <p class={tw`text-gray-600`}>
-        Enter the newly created project directory and run the following command
-        to start the development server:
-      </p>
-      <pre class={tw`overflow-x-auto py-2 px-4 bg(gray-100)`}>
-        deno task start
-      </pre>
-      <p class={tw`text-gray-600`}>
-        You can now open{" "}
-        <a
-          href="http://localhost:8000"
-          class={tw`text-blue-600 hover:underline`}
-        >
-          http://localhost:8000
-        </a>{" "}
-        in your browser to view the page.
-      </p>
-      <p class={tw`text-gray-600`}>
-        A more in-depth getting started guide is available in{" "}
-        <a href="/docs" class={tw`text-blue-600 hover:underline`}>the docs</a>.
-      </p>
-    </section>
-  );
-}
-
-const timeFmt = new Intl.DateTimeFormat("en-US", {
-  timeStyle: "long",
-  hour12: false,
+    return page();
+  },
+  async POST(ctx) {
+    const headers = new Headers();
+    const form = await ctx.req.formData();
+    const treat = form.get("treat");
+    headers.set("location", `/thanks?vote=${treat}`);
+    return new Response(null, {
+      status: 303,
+      headers,
+    });
+  },
 });
 
-function Example() {
+export default define.page<typeof handler>(function MainPage(props) {
+  const origin = `${props.url.protocol}//${props.url.host}`;
+
   return (
-    <section
-      class={tw`max-w-screen-sm mx-auto my-16 px(4 sm:6 md:8) space-y-4`}
+    <div class="flex flex-col min-h-screen bg-white">
+      <div class="bg-transparent flex flex-col relative z-10">
+        <HelloBar />
+        <Header title="" active="/" />
+      </div>
+      <div class="flex flex-col -mt-20 relative">
+        <Hero origin={origin} />
+        <Simple />
+        <RenderingSection />
+        <IslandsSection />
+        <FormsSection />
+        <PartialsSection />
+        <SocialProof />
+        <DenoSection />
+        <CTA />
+      </div>
+      <Footer class="!mt-0" />
+    </div>
+  );
+});
+
+function HelloBar() {
+  return (
+    <a
+      class="bg-gradient-to-r from-blue-200 to-yellow-200 via-green-300 text-black border-b border-green-400 p-4 text-center group"
+      href="https://deno.com/blog/fresh-1.6"
     >
-      <h2 id="example" class={tw`text(xl gray-600) font-bold`}>
-        <a href="#example" class={tw`hover:underline`}>
-          Example
-        </a>
-      </h2>
-      <p class={tw`text-gray-600`}>
-        This text is being server side rendered on the fly. It was rendered at
-        {" "}
-        {timeFmt.format(new Date())}.
-      </p>
-      <p class={tw`text-gray-600`}>
-        The counter below was rendered on the server with a starting value of 3,
-        and was then hydrated on the client to provide interactivity. Try out
-        the buttons!
-      </p>
-      <Counter start={3} />
-      <p class={tw`text-gray-600`}>
-        Only the JS required to render that counter is sent to the client.
-      </p>
-    </section>
+      <b>Fresh v1.6</b> has been released with <b>Tailwind CSS</b>,{" "}
+      <b>better Plugin API</b> and more{" "}
+      <span class="group-hover:underline">→</span>
+    </a>
   );
 }
